@@ -22,6 +22,13 @@ fn fill(gop: &mut GraphicsOutput, x: usize, y: usize, w: usize, h: usize, r: u8,
     });
 }
 
+/// Query the current framebuffer resolution, if a GOP is present.
+pub fn resolution() -> Option<(usize, usize)> {
+    let handle = uefi::boot::get_handle_for_protocol::<GraphicsOutput>().ok()?;
+    let gop = uefi::boot::open_protocol_exclusive::<GraphicsOutput>(handle).ok()?;
+    Some(gop.current_mode_info().resolution())
+}
+
 /// Paint the LivingOS boot splash. Returns the detected resolution, if any.
 pub fn splash() -> Option<(usize, usize)> {
     let handle = uefi::boot::get_handle_for_protocol::<GraphicsOutput>().ok()?;

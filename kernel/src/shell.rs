@@ -101,6 +101,8 @@ impl Shell {
             "mem" | "memory" => self.cmd_mem(),
             "log" | "audit" => self.cmd_log(),
             "msgs" | "messages" => self.cmd_msgs(),
+            "sys" | "uname" => self.cmd_sys(),
+            "recall" | "find" => self.cmd_recall(rest),
             "clear" | "cls" => console::clear(),
             "about" => self.cmd_about(),
             "shutdown" | "reboot" | "exit" => return Action::Shutdown,
@@ -123,6 +125,8 @@ impl Shell {
         kprintln!("  mem [        ] browse Living Memory (recent nodes)");
         kprintln!("  log           the transparent audit trail");
         kprintln!("  msgs          inter-agent messages (kernel-routed)");
+        kprintln!("  recall <q>    search Living Memory for past experience");
+        kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
         kprintln!("  shutdown      power off the machine");
@@ -280,6 +284,47 @@ impl Shell {
             if has(r) {
                 self.relay(r, "Observer", "task report filed");
             }
+        }
+    }
+
+    fn cmd_sys(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("SYSTEM");
+        console::reset_color();
+        kprintln!("  kernel      LivingOS (no_std UEFI; agents are kernel resources)");
+        if let Some((w, h)) = crate::gop::resolution() {
+            kprintln!("  display     {}x{} GPU framebuffer", w, h);
+        } else {
+            kprintln!("  display     serial console");
+        }
+        if let Ok(t) = uefi::runtime::get_time() {
+            kprintln!(
+                "  rtc         {:04}-{:02}-{:02} {:02}:{:02}:{:02}",
+                t.year(), t.month(), t.day(), t.hour(), t.minute(), t.second()
+            );
+        }
+        kprintln!("  agents      {}", self.k.agents().len());
+        let (n, e) = self.mem.counts();
+        kprintln!("  memory      {} nodes, {} edges", n, e);
+        kprintln!("  messages    {}", self.k.messages.len());
+        kprintln!("  audit       {} entries", self.k.audit.len());
+    }
+
+    fn cmd_recall(&self, query: &str) {
+        if query.is_empty() {
+            kprintln!("usage: recall <query>");
+            return;
+        }
+        console::set_color(Color::Yellow);
+        kprintln!("RECALL \"{}\"", query);
+        console::reset_color();
+        let hits = self.mem.search(query);
+        if hits.is_empty() {
+            kprintln!("  (no memory of that yet)");
+            return;
+        }
+        for node in hits.iter().take(16) {
+            kprintln!("  #{:<4} [{:<9}] {}", node.id, node.kind, node.label);
         }
     }
 

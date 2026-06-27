@@ -56,6 +56,13 @@ impl Memory {
         self.nodes.iter().rev().take(n)
     }
 
+    /// Substring recall over node labels (case-insensitive). A stand-in for the
+    /// embedding-backed semantic search the user-space router will provide.
+    pub fn search(&self, query: &str) -> Vec<&Node> {
+        let ql = query.to_lowercase();
+        self.nodes.iter().filter(|n| n.label.to_lowercase().contains(&ql)).collect()
+    }
+
     pub fn by_kind<'a>(&'a self, kind: &'a str) -> impl Iterator<Item = &'a Node> {
         self.nodes.iter().filter(move |n| n.kind.eq_ignore_ascii_case(kind))
     }
