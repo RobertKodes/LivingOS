@@ -16,10 +16,14 @@ cargo build --release
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $efi = "target\x86_64-unknown-uefi\release\livingos.efi"
-$esp = "target\esp"
-New-Item -ItemType Directory -Force -Path "$esp\EFI\BOOT" | Out-Null
-Copy-Item $efi "$esp\EFI\BOOT\BOOTX64.EFI" -Force
-Write-Host "==> EFI System Partition staged (EFI\BOOT\BOOTX64.EFI)"
+$img = "target\livingos.img"
+
+# Build/refresh a real FAT disk image (robust persistence; preserves the memory
+# graph the kernel writes, unlike QEMU's vvfat passthrough).
+Write-Host "==> building disk-image tool"
+cargo build --release --manifest-path "..\tools\mkimage\Cargo.toml" | Out-Null
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& "..\tools\mkimage\target\release\mkimage.exe" $img $efi
 
 $qemuCmd = Get-Command qemu-system-x86_64 -ErrorAction SilentlyContinue
 if ($qemuCmd) {
@@ -56,7 +60,7 @@ $qargs = @(
     "-machine", "q35", "-m", "256",
     "-drive", "if=pflash,format=raw,readonly=on,file=$code",
     "-drive", "if=pflash,format=raw,file=$vars",
-    "-drive", "format=raw,file=fat:rw:$esp",
+    "-drive", "format=raw,file=$img",
     "-no-reboot"
 )
 if ($Serial) { $qargs += @("-display", "none", "-serial", "stdio") }

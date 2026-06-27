@@ -1,0 +1,16 @@
+[package]
+name = "mkimage"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Create/update a FAT EFI System Partition disk image for booting LivingOS in QEMU (robust, persistent — unlike vvfat passthrough)."
+
+[[bin]]
+name = "mkimage"
+path = "src/main.rs"
+
+[dependencies]
+fatfs = "0.3"
+
+# Standalone host tool; not part of the kernel or the user-space workspace.
+[workspace]

@@ -13,10 +13,13 @@ echo "==> building livingos.efi (release)"
 cargo build --release
 
 efi="target/x86_64-unknown-uefi/release/livingos.efi"
-esp="target/esp"
-mkdir -p "$esp/EFI/BOOT"
-cp "$efi" "$esp/EFI/BOOT/BOOTX64.EFI"
-echo "==> EFI System Partition staged (EFI/BOOT/BOOTX64.EFI)"
+img="target/livingos.img"
+
+# Build/refresh a real FAT disk image (robust persistence; preserves the memory
+# graph the kernel writes, unlike QEMU's vvfat passthrough).
+echo "==> building disk-image tool"
+cargo build --release --manifest-path ../tools/mkimage/Cargo.toml >/dev/null
+../tools/mkimage/target/release/mkimage "$img" "$efi"
 
 if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
     echo "QEMU not found. Install qemu (apt install qemu-system-x86 / brew install qemu)."
@@ -52,7 +55,7 @@ echo "==> firmware: $code (+ writable vars)"
 qargs=(-machine q35 -m 256
        -drive "if=pflash,format=raw,readonly=on,file=$code"
        -drive "if=pflash,format=raw,file=target/vars.fd"
-       -drive "format=raw,file=fat:rw:$esp"
+       -drive "format=raw,file=$img"
        -no-reboot)
 [[ "${1:-}" == "--serial" ]] && qargs+=(-display none -serial stdio)
 

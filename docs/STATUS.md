@@ -21,7 +21,9 @@ as an overclaim.
   (a deterministic stand-in for the user-space model router).
 - **Living Memory** — an in-kernel graph (goals/tasks/answers + edges).
 - **Persistence** — the memory graph is saved to / restored from the EFI System
-  Partition and survives reboots (verified across sessions).
+  Partition and survives reboots, with full fidelity over a real FAT disk image
+  built by `tools/mkimage` (verified across sessions: 8 nodes / 7 edges restored
+  intact).
 - **GPU framebuffer** — a boot splash via the UEFI Graphics Output Protocol
   (1280×800 in QEMU; screenshot in `docs/splash.png`).
 - **Interactive Living Shell** — a REPL over keyboard *or* serial:
@@ -36,10 +38,6 @@ as an overclaim.
 - **Visual command center** — the framebuffer shows a *splash*, not yet a live
   text+panel dashboard. Needs a framebuffer font renderer or a GOP/console
   compositor.
-- **Persistence robustness** — works, but over QEMU's `vvfat` directory
-  passthrough the file tail can be truncated on commit (edges are lost, nodes
-  survive). Fix: back the ESP with a real FAT disk image, or write raw sectors
-  via the UEFI Block I/O protocol.
 - **Intelligence** — on the kernel, planning is a keyword heuristic. The real
   local models exist in the user-space router but don't yet drive the on-OS
   agents (see the bridge below).
@@ -66,9 +64,8 @@ These are each substantial efforts; none are faked in the codebase.
 - **Voice I/O** (STT/TTS) and the **plugin system** — designed, not wired.
 
 ## Next milestones (suggested order)
-1. Real FAT disk image (or Block I/O) for robust persistence.
-2. Framebuffer font + a live command-center dashboard.
-3. The syscall bridge + a minimal user-space process model.
-4. Port the user-space Intelligence Router to run as the first OS service and
+1. Framebuffer font + a live command-center dashboard.
+2. The syscall bridge + a minimal user-space process model.
+3. Port the user-space Intelligence Router to run as the first OS service and
    talk to a model host — replacing the keyword planner with real model output
    behind the *same* pipeline.
