@@ -112,6 +112,7 @@ impl Shell {
             "sys" | "uname" => self.cmd_sys(),
             "dash" | "ui" => self.cmd_dash(),
             "plugins" => self.cmd_plugins(),
+            "syscall" => self.cmd_syscall(),
             "gen" | "infer" => self.cmd_gen(rest),
             "beep" => {
                 crate::audio::chime();
@@ -145,6 +146,7 @@ impl Shell {
         kprintln!("  gen <seed>    on-device neural-net text generation");
         kprintln!("  plugins       list plugin agents (loaded from plugins.cfg)");
         kprintln!("  beep          drive the PC speaker (audio out)");
+        kprintln!("  syscall       demo the int 0x80 kernel syscall bridge");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
@@ -332,6 +334,19 @@ impl Shell {
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
         }
+    }
+
+    fn cmd_syscall(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("SYSCALL BRIDGE  (user code traps into the kernel via int 0x80)");
+        console::reset_color();
+        let names = ["SYS_INC", "SYS_DOUBLE", "SYS_VERSION", "SYS_AGENTS"];
+        let report = crate::idt::run_syscall_demo(self.k.agents().len() as u64);
+        for (i, (n, a, r)) in report.calls.iter().enumerate() {
+            kprintln!("  int 0x80  rax={} {:<12} rdi={:<3} -> {}", n, names[i], a, r);
+        }
+        kprintln!("  IDT base: expected {:#x}, active {:#x}", report.expected_base, report.actual_base);
+        kprintln!("  (SYS_VERSION result 0x4C4956494E47 spells \"LIVING\"; firmware IDT restored)");
     }
 
     fn cmd_plugins(&self) {

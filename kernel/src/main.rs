@@ -45,6 +45,7 @@ mod console;
 mod font;
 mod fs;
 mod gop;
+mod idt;
 mod memgraph;
 mod nn;
 mod nn_weights;
