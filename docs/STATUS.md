@@ -25,7 +25,8 @@ as an overclaim.
   built by `tools/mkimage` (verified across sessions: 8 nodes / 7 edges restored
   intact).
 - **GPU framebuffer** — a boot splash via the UEFI Graphics Output Protocol
-  (1280×800 in QEMU; screenshot in `docs/splash.png`).
+  (1280×800 in QEMU; `docs/splash.png`), plus a **visual command center**
+  (`dash`) drawn with an embedded bitmap font (`docs/command-center.png`).
 - **Interactive Living Shell** — a REPL over keyboard *or* serial:
   `help, ps, goal, mem, recall, log, msgs, sys, about, clear, shutdown`.
 
@@ -35,9 +36,10 @@ as an overclaim.
   CLI. Builds and unit-tested. Runs on a host today (not yet on the kernel).
 
 ## Partially done
-- **Visual command center** — the framebuffer shows a *splash*, not yet a live
-  text+panel dashboard. Needs a framebuffer font renderer or a GOP/console
-  compositor.
+- **Visual command center** — the `dash` command renders a real framebuffer
+  dashboard (agent cards, reputation bars, own bitmap font; see
+  `docs/command-center.png`). It is a one-shot *snapshot*; a live, always-on
+  compositor that updates while agents work is still future.
 - **Intelligence** — on the kernel, planning is a keyword heuristic. The real
   local models exist in the user-space router but don't yet drive the on-OS
   agents (see the bridge below).

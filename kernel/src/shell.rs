@@ -5,6 +5,7 @@
 //! the ESP).
 
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use uefi::proto::console::text::Color;
 
 use crate::console;
@@ -102,6 +103,7 @@ impl Shell {
             "log" | "audit" => self.cmd_log(),
             "msgs" | "messages" => self.cmd_msgs(),
             "sys" | "uname" => self.cmd_sys(),
+            "dash" | "ui" => self.cmd_dash(),
             "recall" | "find" => self.cmd_recall(rest),
             "clear" | "cls" => console::clear(),
             "about" => self.cmd_about(),
@@ -126,6 +128,7 @@ impl Shell {
         kprintln!("  log           the transparent audit trail");
         kprintln!("  msgs          inter-agent messages (kernel-routed)");
         kprintln!("  recall <q>    search Living Memory for past experience");
+        kprintln!("  dash          render the visual command center (framebuffer)");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
@@ -284,6 +287,34 @@ impl Shell {
             if has(r) {
                 self.relay(r, "Observer", "task report filed");
             }
+        }
+    }
+
+    fn cmd_dash(&self) {
+        let agents = self.k.agents();
+        let mut views: Vec<(&str, f32)> = Vec::new();
+        for a in agents {
+            views.push((a.name, a.reputation));
+        }
+        let (n, e) = self.mem.counts();
+        let mut footer = String::from("agents ");
+        footer.push_str(&agents.len().to_string());
+        footer.push_str("   memory ");
+        footer.push_str(&n.to_string());
+        footer.push_str("n/");
+        footer.push_str(&e.to_string());
+        footer.push_str("e   messages ");
+        footer.push_str(&self.k.messages.len().to_string());
+        footer.push_str("   audit ");
+        footer.push_str(&self.k.audit.len().to_string());
+        footer.push_str("   -  press Enter to return");
+
+        if crate::gop::render_dashboard(&views, &footer) {
+            kprintln!("[dash] command center rendered to the framebuffer (press Enter to return)");
+            let _ = console::read_line();
+            console::clear();
+        } else {
+            kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
         }
     }
 

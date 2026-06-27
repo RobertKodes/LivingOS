@@ -41,6 +41,7 @@ macro_rules! kprintln {
 }
 
 mod console;
+mod font;
 mod fs;
 mod gop;
 mod memgraph;

@@ -69,6 +69,11 @@ living> shutdown
 Every step is capability-gated and written to the audit trail; the capability
 gate grants `screen_capture` to **Eyes** while **denying** it to **Coder**.
 
+The `dash` command renders the **visual command center** to the GPU framebuffer
+— the agent society as live cards with reputation bars (own bitmap-font text):
+
+![LivingOS visual command center](docs/command-center.png)
+
 ### 2. The user-space runtime — `crates/`  (the intelligence)
 The agents' minds. In a full hardware build these run as a user-space system
 service the kernel schedules; today they run on a host so you can drive the
