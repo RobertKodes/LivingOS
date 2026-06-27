@@ -54,3 +54,27 @@ pub fn chime() {
     tone(990, 160);
     speaker_off();
 }
+
+/// On-metal text-to-speech: vocalise text through the PC speaker by mapping each
+/// letter to a pitch and "singing" the string. Minimal and real (the small local
+/// TTS models — Kokoro etc. — run in user space via the model bridge). Returns
+/// the number of tones played.
+pub fn speak(text: &str) -> u32 {
+    let mut n = 0;
+    for c in text.chars() {
+        let lc = c.to_ascii_lowercase();
+        if lc == ' ' {
+            tone(0, 60); // word gap
+        } else if lc.is_ascii_alphabetic() {
+            let idx = (lc as u8 - b'a') as u32; // 0..25
+            tone(200 + idx * 45, 85); // map letter -> pitch
+            n += 1;
+        } else if lc.is_ascii_digit() {
+            let d = (lc as u8 - b'0') as u32;
+            tone(700 + d * 30, 70);
+            n += 1;
+        }
+    }
+    speaker_off();
+    n
+}

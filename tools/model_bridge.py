@@ -49,10 +49,18 @@ def handle(conn):
             if "\t" not in text:
                 continue
             kind, _, payload = text.partition("\t")
-            if kind in ("ASK", "SAY", "HEAR"):
+            if kind == "HEAR":
+                # STT: a real host would run Moonshine/Whisper on the mic here.
+                ans = "user said: build a snake game"
+            elif kind == "SAY":
+                # TTS: a real host would synthesize with Kokoro and play it.
+                ans = f"spoke {len(payload.split())} words via local TTS"
+            elif kind == "ASK":
                 ans = call_model(payload)
-                conn.sendall(("ANS\t" + ans + "\n").encode())
-                print(f"[bridge] {kind} {payload!r} -> {ans!r}", flush=True)
+            else:
+                continue
+            conn.sendall(("ANS\t" + ans + "\n").encode())
+            print(f"[bridge] {kind} {payload!r} -> {ans!r}", flush=True)
 
 
 def main():

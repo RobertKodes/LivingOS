@@ -117,6 +117,8 @@ impl Shell {
             "net" | "arp" => self.cmd_net(),
             "ping" => self.cmd_ping(),
             "ask" => self.cmd_ask(rest),
+            "say" => self.cmd_say(rest),
+            "hear" | "listen" => self.cmd_hear(),
             "tasks" | "sched" => self.cmd_tasks(),
             "gen" | "infer" => self.cmd_gen(rest),
             "beep" => {
@@ -152,6 +154,8 @@ impl Shell {
         kprintln!("  gen <seed>    on-device neural-net text generation");
         kprintln!("  plugins       list plugin agents (loaded from plugins.cfg)");
         kprintln!("  beep          drive the PC speaker (audio out)");
+        kprintln!("  say <text>    on-metal text-to-speech (PC speaker)");
+        kprintln!("  hear          speech-to-text via the host model bridge");
         kprintln!("  syscall       demo the int 0x80 kernel syscall bridge");
         kprintln!("  vm            memory map + live page-table mapping demo");
         kprintln!("  net           NIC access + live ARP exchange (UEFI SNP)");
@@ -343,6 +347,34 @@ impl Shell {
             console::clear();
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
+        }
+    }
+
+    fn cmd_say(&self, text: &str) {
+        if text.is_empty() {
+            kprintln!("usage: say <text>");
+            return;
+        }
+        console::set_color(Color::Cyan);
+        kprintln!("SAY  (on-metal TTS via PC speaker): {}", text);
+        console::reset_color();
+        let n = crate::audio::speak(text);
+        kprintln!("  vocalized {} tones; the local TTS models run via `ask`/the bridge", n);
+    }
+
+    fn cmd_hear(&mut self) {
+        console::set_color(Color::Cyan);
+        kprintln!("HEAR  (speech-to-text via the host model bridge)");
+        console::reset_color();
+        match crate::bridge::ask("HEAR", "transcribe microphone") {
+            Some(t) => {
+                console::set_color(Color::LightGreen);
+                kprintln!("  transcript: {}", t);
+                console::reset_color();
+            }
+            None => {
+                kprintln!("  (no bridge; STT runs host-side: python tools/model_bridge.py)");
+            }
         }
     }
 
