@@ -100,6 +100,7 @@ impl Shell {
             "ps" | "agents" => self.cmd_ps(),
             "mem" | "memory" => self.cmd_mem(),
             "log" | "audit" => self.cmd_log(),
+            "msgs" | "messages" => self.cmd_msgs(),
             "clear" | "cls" => console::clear(),
             "about" => self.cmd_about(),
             "shutdown" | "reboot" | "exit" => return Action::Shutdown,
@@ -121,6 +122,7 @@ impl Shell {
         kprintln!("  ps            list agents (roles, state, reputation, capabilities)");
         kprintln!("  mem [        ] browse Living Memory (recent nodes)");
         kprintln!("  log           the transparent audit trail");
+        kprintln!("  msgs          inter-agent messages (kernel-routed)");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
         kprintln!("  shutdown      power off the machine");
@@ -225,6 +227,9 @@ impl Shell {
             }
         }
 
+        // The society collaborates via kernel-routed messages.
+        self.collaborate(&tasks);
+
         // Observer synthesizes (placeholder synthesis on-device).
         if let Some(obs) = self.k.find("Observer") {
             self.k.authorize(obs, Capability::ModelInference, "synthesize result");
@@ -241,6 +246,55 @@ impl Shell {
         // Persist the updated graph.
         if fs::save(&self.mem.serialize()) {
             kprintln!("[mem] Living Memory persisted to disk.");
+        }
+    }
+
+    fn relay(&mut self, from: &str, to: &str, body: &str) {
+        if let (Some(f), Some(t)) = (self.k.find(from), self.k.find(to)) {
+            self.k.send(f, t, body);
+            console::set_color(Color::Magenta);
+            kprintln!("  [msg] {:<10} -> {:<10} {}", from, to, body);
+            console::reset_color();
+        }
+    }
+
+    fn collaborate(&mut self, tasks: &[planner::PlanTask]) {
+        let has = |r: &str| tasks.iter().any(|t| t.role == r);
+        console::set_color(Color::Magenta);
+        kprintln!("[society] agents coordinating...");
+        console::reset_color();
+        if has("Architect") {
+            self.relay("Architect", "Researcher", "what constraints apply?");
+            self.relay("Researcher", "Architect", "here is the domain context");
+        }
+        if has("Coder") {
+            self.relay("Coder", "Tester", "core ready for validation");
+        }
+        if has("Security") && has("Coder") {
+            self.relay("Security", "Coder", "address these risks before ship");
+        }
+        if has("Designer") {
+            self.relay("Designer", "Observer", "visual asset attached");
+        }
+        for r in ["Researcher", "Architect", "Coder", "Tester", "Security"] {
+            if has(r) {
+                self.relay(r, "Observer", "task report filed");
+            }
+        }
+    }
+
+    fn cmd_msgs(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("AGENT MESSAGES (kernel-routed)");
+        console::reset_color();
+        let len = self.k.messages.len();
+        if len == 0 {
+            kprintln!("  (none yet — run a goal)");
+            return;
+        }
+        let start = len.saturating_sub(20);
+        for m in &self.k.messages[start..] {
+            kprintln!("  {:<10} -> {:<10} {}", m.from, m.to, m.body);
         }
     }
 

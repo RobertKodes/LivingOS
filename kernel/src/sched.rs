@@ -106,6 +106,14 @@ pub struct AuditLine {
     pub allowed: bool,
 }
 
+/// A message routed between agents by the kernel. The "Agent Society" is real:
+/// agents collaborate by sending these, and every one is logged.
+pub struct Message {
+    pub from: &'static str,
+    pub to: &'static str,
+    pub body: String,
+}
+
 /// A unit of schedulable work, routed to a specialist role.
 pub struct Task {
     pub title: String,
@@ -152,12 +160,30 @@ impl Scheduler {
 pub struct Kernel {
     agents: Vec<Acb>,
     pub audit: Vec<AuditLine>,
+    pub messages: Vec<Message>,
     next_id: AgentId,
 }
 
 impl Kernel {
     pub fn new() -> Self {
-        Kernel { agents: Vec::new(), audit: Vec::new(), next_id: 0 }
+        Kernel { agents: Vec::new(), audit: Vec::new(), messages: Vec::new(), next_id: 0 }
+    }
+
+    pub fn name_of(&self, id: AgentId) -> &'static str {
+        self.index(id).map(|i| self.agents[i].name).unwrap_or("<unknown>")
+    }
+
+    /// Route a message from one agent to another. Kernel-mediated, so it is
+    /// recorded in both the message log and the audit trail.
+    pub fn send(&mut self, from: AgentId, to: AgentId, body: &str) {
+        let fname = self.name_of(from);
+        let tname = self.name_of(to);
+        self.messages.push(Message { from: fname, to: tname, body: String::from(body) });
+        let mut detail = String::from("-> ");
+        detail.push_str(tname);
+        detail.push_str(": ");
+        detail.push_str(body);
+        self.audit.push(AuditLine { agent: fname, action: String::from("message:send"), detail, allowed: true });
     }
 
     pub fn spawn(&mut self, name: &'static str, caps: Vec<Capability>, priority: u8) -> AgentId {
