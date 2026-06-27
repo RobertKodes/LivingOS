@@ -115,6 +115,7 @@ impl Shell {
             "syscall" => self.cmd_syscall(),
             "vm" | "paging" => self.cmd_vm(),
             "net" | "arp" => self.cmd_net(),
+            "ask" => self.cmd_ask(rest),
             "tasks" | "sched" => self.cmd_tasks(),
             "gen" | "infer" => self.cmd_gen(rest),
             "beep" => {
@@ -140,6 +141,7 @@ impl Shell {
         kprintln!("COMMANDS");
         console::reset_color();
         kprintln!("  goal <text>   assemble the society to pursue a goal");
+        kprintln!("  ask <text>    route to local models via the host model bridge");
         kprintln!("  ps            list agents (roles, state, reputation, capabilities)");
         kprintln!("  mem [        ] browse Living Memory (recent nodes)");
         kprintln!("  log           the transparent audit trail");
@@ -339,6 +341,32 @@ impl Shell {
             console::clear();
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
+        }
+    }
+
+    fn cmd_ask(&mut self, goal: &str) {
+        if goal.is_empty() {
+            kprintln!("usage: ask <question or goal>");
+            return;
+        }
+        console::set_color(Color::Cyan);
+        kprintln!("ASK  (kernel -> model bridge over COM2): {}", goal);
+        console::reset_color();
+        kprintln!("  routing to the local models on the host...");
+        match crate::bridge::ask("ASK", goal) {
+            Some(ans) => {
+                console::set_color(Color::LightGreen);
+                kprintln!("  model: {}", ans);
+                console::reset_color();
+                let g = self.mem.add_node("Goal", goal);
+                let a = self.mem.add_node("Answer", &ans);
+                self.mem.link(g, a, "answered_by");
+                let _ = fs::save(&self.mem.serialize());
+            }
+            None => {
+                kprintln!("  (no bridge daemon connected)");
+                kprintln!("  start it on the host:  python tools/model_bridge.py");
+            }
         }
     }
 

@@ -41,6 +41,7 @@ macro_rules! kprintln {
 }
 
 mod audio;
+mod bridge;
 mod console;
 mod font;
 mod fs;
@@ -65,6 +66,7 @@ use uefi::prelude::*;
 fn main() -> Status {
     uefi::helpers::init().unwrap();
     serial::init();
+    serial::init2(); // COM2: kernel<->host model bridge
 
     // Paint the GPU framebuffer splash (best-effort), then hold it briefly.
     match gop::splash() {

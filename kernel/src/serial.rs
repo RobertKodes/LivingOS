@@ -7,6 +7,7 @@ use core::arch::asm;
 use core::fmt;
 
 const PORT: u16 = 0x3F8; // COM1
+const PORT2: u16 = 0x2F8; // COM2 — used for the kernel<->host model bridge
 
 #[inline]
 unsafe fn outb(port: u16, val: u8) {
@@ -61,6 +62,44 @@ fn write_byte(b: u8) {
 /// Write a single byte to COM1 — a minimal-stack breadcrumb primitive.
 pub fn putc(b: u8) {
     write_byte(b);
+}
+
+// ---- COM2: the kernel<->host model bridge transport -----------------------
+
+/// Initialise COM2 (38400 8N1) for the model bridge.
+pub fn init2() {
+    unsafe {
+        outb(PORT2 + 1, 0x00);
+        outb(PORT2 + 3, 0x80);
+        outb(PORT2 + 0, 0x03);
+        outb(PORT2 + 1, 0x00);
+        outb(PORT2 + 3, 0x03);
+        outb(PORT2 + 2, 0xC7);
+        outb(PORT2 + 4, 0x0B);
+    }
+}
+
+fn transmit_empty2() -> bool {
+    unsafe { inb(PORT2 + 5) & 0x20 != 0 }
+}
+
+fn data_ready2() -> bool {
+    unsafe { inb(PORT2 + 5) & 0x01 != 0 }
+}
+
+/// Write one byte to COM2.
+pub fn putc2(b: u8) {
+    while !transmit_empty2() {}
+    unsafe { outb(PORT2, b) }
+}
+
+/// Non-blocking read of one byte from COM2, if any.
+pub fn try_read_byte2() -> Option<u8> {
+    if data_ready2() {
+        Some(unsafe { inb(PORT2) })
+    } else {
+        None
+    }
 }
 
 /// A `core::fmt::Write` sink over COM1. `\n` is expanded to `\r\n`.
