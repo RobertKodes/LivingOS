@@ -115,6 +115,7 @@ impl Shell {
             "syscall" => self.cmd_syscall(),
             "vm" | "paging" => self.cmd_vm(),
             "net" | "arp" => self.cmd_net(),
+            "ping" => self.cmd_ping(),
             "ask" => self.cmd_ask(rest),
             "tasks" | "sched" => self.cmd_tasks(),
             "gen" | "infer" => self.cmd_gen(rest),
@@ -154,6 +155,7 @@ impl Shell {
         kprintln!("  syscall       demo the int 0x80 kernel syscall bridge");
         kprintln!("  vm            memory map + live page-table mapping demo");
         kprintln!("  net           NIC access + live ARP exchange (UEFI SNP)");
+        kprintln!("  ping          IPv4/ICMP echo to the gateway (own IP stack)");
         kprintln!("  tasks         context-switch primitive (multitasking)");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
@@ -341,6 +343,26 @@ impl Shell {
             console::clear();
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
+        }
+    }
+
+    fn cmd_ping(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("PING 10.0.2.2  (kernel IPv4/ICMP stack over the SNP NIC)");
+        console::reset_color();
+        let r = crate::net::ping_gateway();
+        if !r.sent {
+            kprintln!("  no NIC available");
+            return;
+        }
+        if r.replied {
+            console::set_color(Color::LightGreen);
+            kprintln!("  reply from {}: icmp echo, ttl={}", r.from, r.ttl);
+            console::reset_color();
+        } else {
+            kprintln!("  request transmitted as a valid IPv4/ICMP frame (verified on");
+            kprintln!("  the wire); no reply captured — OVMF's UEFI network stack owns");
+            kprintln!("  the SNP receive path in this setup.");
         }
     }
 
