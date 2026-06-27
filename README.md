@@ -128,5 +128,8 @@ model runtime so the Intelligence Router's local models drive the on-OS agents;
 embedding-backed semantic memory; a real FAT disk image for robust persistence;
 preemptive multitasking; and networking.
 
+See [docs/STATUS.md](docs/STATUS.md) for a candid, detailed account of exactly
+what works today versus the larger items still ahead.
+
 ## License
 MIT — see [LICENSE](LICENSE).
