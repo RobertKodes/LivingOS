@@ -135,14 +135,17 @@ char model running in the kernel), **PC-speaker audio**, a **plugin system**
 **context-switch primitive**. See the `syscall`, `vm`, `gen`, `beep`, `plugins`,
 `net`, `tasks` shell commands.
 
-**Next:** render the live command center into the framebuffer (text + panels,
-not just a splash); a syscall boundary between the kernel and a user-space
-model runtime so the Intelligence Router's local models drive the on-OS agents;
-embedding-backed semantic memory; a real FAT disk image for robust persistence;
-preemptive multitasking; and networking.
+**Milestone 4 (done):** the kernel↔user-space **model bridge** (COM2 → a host
+model service → local models; `ask`), a hand-rolled **IPv4/ICMP stack** that
+transmits verified ping frames (`ping`), **voice I/O** (on-metal PC-speaker TTS
+`say` + bridge STT `hear`), and **self-hosting** — `selfhost` calls
+`ExitBootServices` and runs LivingOS on its own IDT, serial, framebuffer, and
+PS/2 drivers with no firmware beneath it:
+
+![LivingOS self-hosted after ExitBootServices](docs/selfhosted.png)
 
 See [docs/STATUS.md](docs/STATUS.md) for a candid, detailed account of exactly
-what works today versus the larger items still ahead.
+what works today, with honest caveats, and the remaining roadmap.
 
 ## License
 MIT — see [LICENSE](LICENSE).
