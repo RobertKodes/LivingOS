@@ -40,12 +40,16 @@ macro_rules! kprintln {
     }};
 }
 
+mod audio;
 mod console;
 mod font;
 mod fs;
 mod gop;
 mod memgraph;
+mod nn;
+mod nn_weights;
 mod planner;
+mod plugins;
 mod sched;
 mod serial;
 mod shell;

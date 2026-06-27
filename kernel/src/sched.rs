@@ -32,6 +32,26 @@ pub enum Capability {
 }
 
 impl Capability {
+    /// Parse a capability name (as used in a plugin manifest).
+    pub fn parse(s: &str) -> Option<Capability> {
+        Some(match s.trim() {
+            "read_files" => Capability::ReadFiles,
+            "write_files" => Capability::WriteFiles,
+            "internet" => Capability::Internet,
+            "terminal" => Capability::Terminal,
+            "model_inference" => Capability::ModelInference,
+            "memory" => Capability::Memory,
+            "screen_capture" => Capability::ScreenCapture,
+            "image_gen" => Capability::ImageGen,
+            "camera" => Capability::Camera,
+            "microphone" => Capability::Microphone,
+            "speaker" => Capability::Speaker,
+            "git" => Capability::Git,
+            "compiler" => Capability::Compiler,
+            _ => return None,
+        })
+    }
+
     pub fn label(self) -> &'static str {
         match self {
             Capability::ReadFiles => "read_files",

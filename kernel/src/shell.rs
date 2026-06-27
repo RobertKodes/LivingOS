@@ -19,6 +19,7 @@ pub struct Shell {
     k: Kernel,
     mem: Memory,
     loaded: bool,
+    plugins: Vec<&'static str>,
 }
 
 enum Action {
@@ -32,11 +33,17 @@ impl Shell {
         for spec in society::society() {
             k.spawn(spec.name, spec.caps, spec.priority);
         }
+        // Load plugin agents (data-driven OS extensions) from the ESP manifest.
+        let mut plugins = Vec::new();
+        for p in crate::plugins::load() {
+            k.spawn(p.name, p.caps, p.priority);
+            plugins.push(p.name);
+        }
         let (mem, loaded) = match fs::load() {
             Some(blob) => (Memory::deserialize(&blob), true),
             None => (Memory::new(), false),
         };
-        Shell { k, mem, loaded }
+        Shell { k, mem, loaded, plugins }
     }
 
     /// A one-time self-test at boot: prove the capability gate works (visible
@@ -104,6 +111,12 @@ impl Shell {
             "msgs" | "messages" => self.cmd_msgs(),
             "sys" | "uname" => self.cmd_sys(),
             "dash" | "ui" => self.cmd_dash(),
+            "plugins" => self.cmd_plugins(),
+            "gen" | "infer" => self.cmd_gen(rest),
+            "beep" => {
+                crate::audio::chime();
+                kprintln!("(beeped the PC speaker)");
+            }
             "recall" | "find" => self.cmd_recall(rest),
             "clear" | "cls" => console::clear(),
             "about" => self.cmd_about(),
@@ -129,6 +142,9 @@ impl Shell {
         kprintln!("  msgs          inter-agent messages (kernel-routed)");
         kprintln!("  recall <q>    search Living Memory for past experience");
         kprintln!("  dash          render the visual command center (framebuffer)");
+        kprintln!("  gen <seed>    on-device neural-net text generation");
+        kprintln!("  plugins       list plugin agents (loaded from plugins.cfg)");
+        kprintln!("  beep          drive the PC speaker (audio out)");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
@@ -318,6 +334,32 @@ impl Shell {
         }
     }
 
+    fn cmd_plugins(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("PLUGIN AGENTS (loaded from plugins.cfg on the ESP)");
+        console::reset_color();
+        if self.plugins.is_empty() {
+            kprintln!("  (none)");
+            return;
+        }
+        for name in &self.plugins {
+            if let Some(id) = self.k.find(name) {
+                if let Some(a) = self.k.agents().iter().find(|x| x.id == id) {
+                    kprintln!("  {:<12} {}", a.name, a.caps_label());
+                }
+            }
+        }
+    }
+
+    fn cmd_gen(&self, seed: &str) {
+        let s = if seed.is_empty() { "the " } else { seed };
+        console::set_color(Color::Yellow);
+        kprintln!("ON-DEVICE INFERENCE  (tiny char MLP, {} params, running in-kernel)", crate::nn::params());
+        console::reset_color();
+        let out = crate::nn::generate(s, 90);
+        kprintln!("  {}", out);
+    }
+
     fn cmd_sys(&self) {
         console::set_color(Color::Yellow);
         kprintln!("SYSTEM");
@@ -339,6 +381,8 @@ impl Shell {
         kprintln!("  memory      {} nodes, {} edges", n, e);
         kprintln!("  messages    {}", self.k.messages.len());
         kprintln!("  audit       {} entries", self.k.audit.len());
+        kprintln!("  plugins     {} loaded", self.plugins.len());
+        kprintln!("  model       on-device char MLP, {} params", crate::nn::params());
     }
 
     fn cmd_recall(&self, query: &str) {
