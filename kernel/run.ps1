@@ -21,16 +21,17 @@ New-Item -ItemType Directory -Force -Path "$esp\EFI\BOOT" | Out-Null
 Copy-Item $efi "$esp\EFI\BOOT\BOOTX64.EFI" -Force
 Write-Host "==> EFI System Partition staged (EFI\BOOT\BOOTX64.EFI)"
 
-$qemu = Get-Command qemu-system-x86_64 -ErrorAction SilentlyContinue
-if (-not $qemu) {
-    $local = "$env:USERPROFILE\qemu\qemu-system-x86_64.exe"
-    if (Test-Path $local) { $qemu = Get-Item $local } else {
-        Write-Host "QEMU not found. Install it (winget install SoftwareFreedomConservancy.QEMU)"
-        Write-Host "or extract the qemu.weilnetz.de installer to %USERPROFILE%\qemu."
-        exit 1
-    }
+$qemuCmd = Get-Command qemu-system-x86_64 -ErrorAction SilentlyContinue
+if ($qemuCmd) {
+    $qemuExe = $qemuCmd.Source
+} elseif (Test-Path "$env:USERPROFILE\qemu\qemu-system-x86_64.exe") {
+    $qemuExe = "$env:USERPROFILE\qemu\qemu-system-x86_64.exe"
+} else {
+    Write-Host "QEMU not found. Install it (winget install SoftwareFreedomConservancy.QEMU)"
+    Write-Host "or extract the qemu.weilnetz.de installer to %USERPROFILE%\qemu."
+    exit 1
 }
-$qdir = Split-Path $qemu.Source
+$qdir = Split-Path $qemuExe
 
 # Split OVMF: read-only CODE + a writable copy of VARS.
 $code = $env:OVMF_CODE
@@ -61,4 +62,4 @@ $qargs = @(
 if ($Serial) { $qargs += @("-display", "none", "-serial", "stdio") }
 
 Write-Host "==> booting LivingOS in QEMU"
-& $qemu.Source @qargs
+& $qemuExe @qargs
