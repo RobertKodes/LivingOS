@@ -55,6 +55,7 @@ mod nn_weights;
 mod planner;
 mod plugins;
 mod sched;
+mod selfhost;
 mod serial;
 mod shell;
 mod society;

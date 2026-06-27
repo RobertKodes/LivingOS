@@ -128,6 +128,10 @@ impl Shell {
             "recall" | "find" => self.cmd_recall(rest),
             "clear" | "cls" => console::clear(),
             "about" => self.cmd_about(),
+            "selfhost" | "takeover" => {
+                kprintln!("Transitioning to SELF-HOSTED mode (one-way; firmware released)...");
+                crate::selfhost::enter();
+            }
             "shutdown" | "reboot" | "exit" => return Action::Shutdown,
             other => {
                 console::set_color(Color::Red);
@@ -164,6 +168,7 @@ impl Shell {
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
+        kprintln!("  selfhost      ExitBootServices; run on own drivers (one-way)");
         kprintln!("  shutdown      power off the machine");
     }
 
