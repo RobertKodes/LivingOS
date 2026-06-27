@@ -124,8 +124,16 @@ agent, the Designer image agent, and the Living Shell — all building and teste
 
 **Milestone 2 (done):** the kernel is now *interactive and persistent*. An
 on-OS Living Shell (keyboard or serial), an on-device planner, an in-kernel
-Living Memory graph **persisted to the EFI partition across reboots**, and a
-GPU framebuffer boot splash. Verified booting and driven over serial in QEMU.
+Living Memory graph **persisted across reboots** (real FAT image), and a GPU
+framebuffer boot splash + **visual command center** (`dash`).
+
+**Milestone 3 (done):** real low-level systems, each verified booting in QEMU —
+a **syscall bridge** (`int 0x80` into the kernel's own IDT), **paging** (frame
+allocator + live page-table mapping), **on-metal neural-net inference** (a tiny
+char model running in the kernel), **PC-speaker audio**, a **plugin system**
+(agents from an ESP manifest), **NIC access + ARP** via the UEFI SNP, and a
+**context-switch primitive**. See the `syscall`, `vm`, `gen`, `beep`, `plugins`,
+`net`, `tasks` shell commands.
 
 **Next:** render the live command center into the framebuffer (text + panels,
 not just a splash); a syscall boundary between the kernel and a user-space
