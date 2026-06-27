@@ -16,6 +16,12 @@ This is an experimental OS. It boots on bare-metal UEFI firmware in QEMU.
  User  →  Goal  →  Agent Society  →  Living Kernel  →  Hardware
 ```
 
+![LivingOS boot splash, rendered to the GPU framebuffer](docs/splash.png)
+
+*The boot splash above is a real GPU-framebuffer render captured from LivingOS
+running in QEMU (1280×800): the title band, the nested-square "living core",
+and nine indicators for the agent society.*
+
 ## Two layers
 
 ### 1. The Living Kernel — `kernel/`  (the operating system)
@@ -28,6 +34,11 @@ brings up its **native agent subsystem** and demonstrates the core machinery:
 - a **capability gate** every privileged action must pass — granted *or denied*
 - a transparent **audit trail** (every action is explainable)
 - **reputation** that moves with outcomes (the Evolution Engine signal)
+- a **GPU framebuffer** splash via the UEFI Graphics Output Protocol
+- an **interactive Living Shell** (keyboard *or* serial) — you state goals at boot
+- an on-device **planner** that decomposes a goal into role-assigned tasks
+- **Living Memory** as an in-kernel graph, **persisted to the EFI partition**
+  across reboots
 
 ```sh
 cd kernel
@@ -36,10 +47,27 @@ cargo build --release            # produces target/x86_64-unknown-uefi/release/l
 ./run.sh         # Linux/macOS: same
 ```
 
-Boot output (in QEMU) shows the society spawning, the agent table, the
-capability gate granting `screen_capture` to **Eyes** while **denying** it to
-**Coder**, a goal being scheduled across specialists, the audit trail, and the
-resulting reputation.
+LivingOS boots into an interactive prompt. You don't open apps — you state goals:
+
+```
+living> ps                 # the agent society: roles, state, reputation, capabilities
+living> goal build a secure multiplayer game with cover art
+[plan] 6 tasks; dispatching by priority...
+  [Security  ] review the security model      <- "secure" routed Security first
+  [Architect ] design the approach
+  [Researcher] research the problem and constraints
+  [Coder     ] implement the core
+  [Tester    ] validate it works
+  [Designer  ] generate the visual asset       <- "art" pulled in the Designer
+[done] ... handled by 6 agents.
+[mem] Living Memory persisted to disk.
+living> mem                # browse Living Memory (survives reboots)
+living> log                # the transparent audit trail
+living> shutdown
+```
+
+Every step is capability-gated and written to the audit trail; the capability
+gate grants `screen_capture` to **Eyes** while **denying** it to **Coder**.
 
 ### 2. The user-space runtime — `crates/`  (the intelligence)
 The agents' minds. In a full hardware build these run as a user-space system
@@ -89,10 +117,16 @@ All local. No cloud. Edit `config/fleet.json` — the router is model-agnostic.
 host-side Agent Runtime, Intelligence Router, Living Memory, the Eyes perception
 agent, the Designer image agent, and the Living Shell — all building and tested.
 
-**Next:** a framebuffer (GOP) GPU console and the visual command center; a
-syscall boundary between the kernel and a user-space model runtime; embedding-
-backed semantic memory; voice I/O; and persistence of the memory graph across
-boots.
+**Milestone 2 (done):** the kernel is now *interactive and persistent*. An
+on-OS Living Shell (keyboard or serial), an on-device planner, an in-kernel
+Living Memory graph **persisted to the EFI partition across reboots**, and a
+GPU framebuffer boot splash. Verified booting and driven over serial in QEMU.
+
+**Next:** render the live command center into the framebuffer (text + panels,
+not just a splash); a syscall boundary between the kernel and a user-space
+model runtime so the Intelligence Router's local models drive the on-OS agents;
+embedding-backed semantic memory; a real FAT disk image for robust persistence;
+preemptive multitasking; and networking.
 
 ## License
 MIT — see [LICENSE](LICENSE).

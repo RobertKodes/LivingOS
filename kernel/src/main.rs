@@ -42,6 +42,7 @@ macro_rules! kprintln {
 
 mod console;
 mod fs;
+mod gop;
 mod memgraph;
 mod planner;
 mod sched;
@@ -55,6 +56,16 @@ use uefi::prelude::*;
 fn main() -> Status {
     uefi::helpers::init().unwrap();
     serial::init();
+
+    // Paint the GPU framebuffer splash (best-effort), then hold it briefly.
+    match gop::splash() {
+        Some((w, h)) => {
+            kprintln!("[boot] GPU framebuffer ................. ok ({}x{})", w, h);
+            boot::stall(1_500_000);
+        }
+        None => kprintln!("[boot] GPU framebuffer ................. none (serial console)"),
+    }
+
     banner();
     let mut sh = shell::Shell::new();
     sh.boot_selftest();
