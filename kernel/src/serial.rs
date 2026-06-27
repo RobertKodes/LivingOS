@@ -66,9 +66,24 @@ pub fn putc(b: u8) {
 
 // ---- COM2: the kernel<->host model bridge transport -----------------------
 
-/// Initialise COM2 (38400 8N1) for the model bridge.
+static mut COM2_OK: bool = false;
+
+/// Whether a COM2 UART is actually present (so the model bridge is reachable).
+pub fn com2_present() -> bool {
+    unsafe { COM2_OK }
+}
+
+/// Initialise COM2 (38400 8N1) for the model bridge. Detects whether the UART
+/// exists first (via the scratch register) so we never talk to a phantom port.
 pub fn init2() {
     unsafe {
+        // Scratch-register probe: a real 16550 returns what we wrote.
+        outb(PORT2 + 7, 0xAA);
+        if inb(PORT2 + 7) != 0xAA {
+            COM2_OK = false;
+            return;
+        }
+        COM2_OK = true;
         outb(PORT2 + 1, 0x00);
         outb(PORT2 + 3, 0x80);
         outb(PORT2 + 0, 0x03);

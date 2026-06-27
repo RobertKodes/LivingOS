@@ -11,7 +11,6 @@
 //! no `Vec`/`String`/`format!`, just raw bytes and the embedded font.
 
 use core::arch::{asm, global_asm};
-use core::ptr::addr_of_mut;
 use uefi::proto::console::gop::{GraphicsOutput, PixelFormat};
 
 use crate::font::FONT;

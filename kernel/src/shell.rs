@@ -247,7 +247,7 @@ impl Shell {
         if let Some(planner_id) = self.k.find("Planner") {
             let _ = self.k.authorize(planner_id, Capability::ModelInference, "consult local model");
         }
-        match crate::bridge::ask("ASK", goal) {
+        match crate::bridge::ask("ASK", goal, 3000) {
             Some(plan) => {
                 console::set_color(Color::LightGreen);
                 kprintln!("[planner] local model (via bridge):");
@@ -397,7 +397,7 @@ impl Shell {
         console::set_color(Color::Cyan);
         kprintln!("HEAR  (speech-to-text via the host model bridge)");
         console::reset_color();
-        match crate::bridge::ask("HEAR", "transcribe microphone") {
+        match crate::bridge::ask("HEAR", "transcribe microphone", 90000) {
             Some(t) => {
                 console::set_color(Color::LightGreen);
                 kprintln!("  transcript: {}", t);
@@ -438,7 +438,7 @@ impl Shell {
         kprintln!("ASK  (kernel -> model bridge over COM2): {}", goal);
         console::reset_color();
         kprintln!("  routing to the local models on the host...");
-        match crate::bridge::ask("ASK", goal) {
+        match crate::bridge::ask("ASK", goal, 90000) {
             Some(ans) => {
                 console::set_color(Color::LightGreen);
                 kprintln!("  model: {}", ans);

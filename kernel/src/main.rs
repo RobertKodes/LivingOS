@@ -18,31 +18,41 @@
 #[macro_use]
 extern crate alloc;
 
-/// Print to BOTH the UEFI console and the COM1 serial line (no newline).
+/// The kernel console sink: the on-screen framebuffer text console **and** the
+/// COM1 serial line. The whole session is thus visible both in the display and
+/// over serial.
+pub struct Out;
+impl core::fmt::Write for Out {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        crate::fbcon::puts(s);
+        for b in s.bytes() {
+            if b == b'\n' {
+                crate::serial::putc(b'\r');
+            }
+            crate::serial::putc(b);
+        }
+        Ok(())
+    }
+}
+
 #[macro_export]
 macro_rules! kprint {
     ($($arg:tt)*) => {{
-        uefi::print!($($arg)*);
-        { use core::fmt::Write as _; let _ = write!($crate::serial::Serial, $($arg)*); }
+        use core::fmt::Write as _;
+        let _ = write!($crate::Out, $($arg)*);
     }};
 }
 
-/// Print a line to BOTH the UEFI console and the COM1 serial line.
 #[macro_export]
 macro_rules! kprintln {
-    () => {{
-        uefi::println!();
-        { use core::fmt::Write as _; let _ = writeln!($crate::serial::Serial); }
-    }};
-    ($($arg:tt)*) => {{
-        uefi::println!($($arg)*);
-        { use core::fmt::Write as _; let _ = writeln!($crate::serial::Serial, $($arg)*); }
-    }};
+    () => {{ $crate::kprint!("\n"); }};
+    ($($arg:tt)*) => {{ $crate::kprint!($($arg)*); $crate::kprint!("\n"); }};
 }
 
 mod audio;
 mod bridge;
 mod console;
+mod fbcon;
 mod font;
 mod fs;
 mod gop;
@@ -68,16 +78,13 @@ fn main() -> Status {
     uefi::helpers::init().unwrap();
     serial::init();
     serial::init2(); // COM2: kernel<->host model bridge
+    fbcon::init(); // on-screen framebuffer text console
 
-    // Paint the GPU framebuffer splash (best-effort), then hold it briefly.
-    match gop::splash() {
-        Some((w, h)) => {
-            kprintln!("[boot] GPU framebuffer ................. ok ({}x{})", w, h);
-            boot::stall(1_500_000);
-        }
-        None => kprintln!("[boot] GPU framebuffer ................. none (serial console)"),
+    // Paint the GPU framebuffer splash, hold it, then clear to the console.
+    if gop::splash().is_some() {
+        boot::stall(1_500_000);
     }
-
+    fbcon::clear();
     banner();
     let mut sh = shell::Shell::new();
     sh.boot_selftest();

@@ -9,15 +9,26 @@ use uefi::proto::console::text::{Color, Key, ScanCode};
 use crate::serial;
 
 pub fn clear() {
-    let _ = uefi::system::with_stdout(|o| o.clear());
+    crate::fbcon::clear();
 }
 
 pub fn set_color(fg: Color) {
-    let _ = uefi::system::with_stdout(|o| o.set_color(fg, Color::Black));
+    let (r, g, b) = match fg {
+        Color::Yellow => (240, 220, 90),
+        Color::Cyan => (90, 200, 255),
+        Color::LightGreen => (120, 220, 150),
+        Color::Green => (90, 190, 120),
+        Color::Red | Color::LightRed => (235, 95, 95),
+        Color::Magenta | Color::LightMagenta => (210, 130, 210),
+        Color::LightBlue | Color::Blue => (110, 150, 240),
+        Color::White => (240, 244, 255),
+        _ => (200, 205, 216),
+    };
+    crate::fbcon::set_fg(r, g, b);
 }
 
 pub fn reset_color() {
-    set_color(Color::LightGray);
+    crate::fbcon::set_fg(200, 205, 216);
 }
 
 /// Echo a single character to both the display and the serial console.

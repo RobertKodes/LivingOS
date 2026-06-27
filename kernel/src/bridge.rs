@@ -28,11 +28,20 @@ fn send_line(prefix: &str, text: &str) {
     crate::serial::putc2(b'\n');
 }
 
-/// Send a request to the model bridge and wait (with timeout) for the answer.
-/// Returns None if no host daemon responds.
-pub fn ask(kind: &str, text: &str) -> Option<String> {
-    // Drain any stale bytes.
-    while crate::serial::try_read_byte2().is_some() {}
+/// Send a request to the model bridge and wait up to `max_polls` ms for the
+/// answer. Returns None if no host daemon responds in time. Use a short budget
+/// for interactive paths (so it falls back fast when no daemon is connected) and
+/// a long one when you actually want to wait for model inference.
+pub fn ask(kind: &str, text: &str, max_polls: u64) -> Option<String> {
+    // No COM2 UART -> no model bridge possible; fall back immediately.
+    if !crate::serial::com2_present() {
+        return None;
+    }
+    // Drain any stale bytes (bounded, so a stuck port can't loop forever).
+    let mut drain = 0;
+    while crate::serial::try_read_byte2().is_some() && drain < 512 {
+        drain += 1;
+    }
 
     let mut tag = String::from(kind);
     tag.push('\t');
@@ -50,9 +59,7 @@ pub fn ask(kind: &str, text: &str) -> Option<String> {
             }
             None => {
                 idle += 1;
-                // ~30 seconds of patience for the host model call (1 ms per poll;
-                // a wall-clock budget, not a spin count, so it survives a fast CPU).
-                if idle > 90000 {
+                if idle > max_polls {
                     return None;
                 }
                 uefi::boot::stall(1000);
