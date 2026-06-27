@@ -35,6 +35,7 @@ $args = @(
     "-drive", "if=pflash,format=raw,readonly=on,file=$code",
     "-drive", "if=pflash,format=raw,file=$vars",
     "-drive", "format=raw,file=$img",
+    "-netdev", "user,id=n0", "-device", "e1000,netdev=n0",  # so `net`/`ping` work
     "-no-reboot"
 )
 if ($Serial) {
