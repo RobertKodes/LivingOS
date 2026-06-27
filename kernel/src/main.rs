@@ -48,6 +48,7 @@ mod gop;
 mod idt;
 mod memgraph;
 mod mm;
+mod net;
 mod nn;
 mod nn_weights;
 mod planner;

@@ -114,6 +114,7 @@ impl Shell {
             "plugins" => self.cmd_plugins(),
             "syscall" => self.cmd_syscall(),
             "vm" | "paging" => self.cmd_vm(),
+            "net" | "arp" => self.cmd_net(),
             "tasks" | "sched" => self.cmd_tasks(),
             "gen" | "infer" => self.cmd_gen(rest),
             "beep" => {
@@ -150,7 +151,8 @@ impl Shell {
         kprintln!("  beep          drive the PC speaker (audio out)");
         kprintln!("  syscall       demo the int 0x80 kernel syscall bridge");
         kprintln!("  vm            memory map + live page-table mapping demo");
-        kprintln!("  tasks         cooperative multitasking with context switches");
+        kprintln!("  net           NIC access + live ARP exchange (UEFI SNP)");
+        kprintln!("  tasks         context-switch primitive (multitasking)");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
@@ -338,6 +340,25 @@ impl Shell {
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
         }
+    }
+
+    fn cmd_net(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("NETWORKING  (UEFI Simple Network Protocol)");
+        console::reset_color();
+        let r = crate::net::run_net_demo();
+        if !r.present {
+            kprintln!("  {}", r.note);
+            kprintln!("  (boot QEMU with: -netdev user,id=n0 -device e1000,netdev=n0)");
+            return;
+        }
+        kprintln!("  NIC MAC      {}", r.mac);
+        if let Some(g) = &r.gateway_mac {
+            console::set_color(Color::LightGreen);
+            kprintln!("  gateway MAC  {}  (resolved live via ARP)", g);
+            console::reset_color();
+        }
+        kprintln!("  {}", r.note);
     }
 
     fn cmd_tasks(&self) {
