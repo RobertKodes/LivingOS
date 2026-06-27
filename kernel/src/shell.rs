@@ -113,6 +113,7 @@ impl Shell {
             "dash" | "ui" => self.cmd_dash(),
             "plugins" => self.cmd_plugins(),
             "syscall" => self.cmd_syscall(),
+            "vm" | "paging" => self.cmd_vm(),
             "gen" | "infer" => self.cmd_gen(rest),
             "beep" => {
                 crate::audio::chime();
@@ -147,6 +148,7 @@ impl Shell {
         kprintln!("  plugins       list plugin agents (loaded from plugins.cfg)");
         kprintln!("  beep          drive the PC speaker (audio out)");
         kprintln!("  syscall       demo the int 0x80 kernel syscall bridge");
+        kprintln!("  vm            memory map + live page-table mapping demo");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
@@ -334,6 +336,27 @@ impl Shell {
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
         }
+    }
+
+    fn cmd_vm(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("MEMORY / PAGING");
+        console::reset_color();
+        let r = crate::mm::run_paging_demo();
+        kprintln!("  usable RAM   {} MiB (conventional)", r.ram_mib);
+        kprintln!("  CR3 (PML4)   {:#x}", r.cr3);
+        kprintln!("  alloc frame  {:#x}  (physical, zeroed)", r.frame);
+        kprintln!("  new mapping  virt {:#x} -> phys {:#x}", r.virt, r.frame);
+        kprintln!("  wrote {:#x} via virt", r.wrote);
+        kprintln!("  read  {:#x} via virt,  {:#x} via phys", r.via_virt, r.via_phys);
+        if r.ok {
+            console::set_color(Color::LightGreen);
+            kprintln!("  OK: virtual and physical views agree -> the mapping is live");
+        } else {
+            console::set_color(Color::Red);
+            kprintln!("  mapping failed");
+        }
+        console::reset_color();
     }
 
     fn cmd_syscall(&self) {
