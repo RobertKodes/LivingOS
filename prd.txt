@@ -1,0 +1,431 @@
+# LivingOS PRD
+
+# Vision
+
+LivingOS is an AI-native operating system.
+
+Traditional operating systems were designed around applications, files, and windows.
+
+LivingOS is designed around intelligent agents.
+
+Applications become tools.
+Agents become users.
+
+The operating system itself is capable of reasoning, planning, collaborating, remembering, and evolving.
+
+The objective is not to replace Linux or Windows.
+
+The objective is to create the first operating system where intelligence is a native system resource.
+
+---
+
+# Core Philosophy
+
+Current Operating Systems
+
+User → Application → Operating System → Hardware
+
+LivingOS
+
+User → Goal → Agent Society → Kernel → Hardware
+
+Users never think about applications.
+
+Users express goals.
+
+The operating system decides how to accomplish them.
+
+---
+
+# Design Principles
+
+AI First
+
+Everything in the system is designed around intelligent processes.
+
+Agent Native
+
+Agents are first-class operating system objects.
+
+Persistent Memory
+
+The OS remembers forever.
+
+Transparent Reasoning
+
+Every action has an explanation.
+
+Local First
+
+Runs entirely offline if desired.
+
+Model Agnostic
+
+Supports any LLM.
+
+Secure
+
+Agents never receive unrestricted access.
+
+Permission based architecture.
+
+Composable
+
+Every component can be replaced.
+
+---
+
+# Core Components
+
+## Living Kernel
+
+Responsibilities
+
+* Process scheduling
+* Memory management
+* Interrupt handling
+* Device communication
+* Filesystem
+* Networking
+* Security
+* Native Agent Scheduler
+
+Unlike existing kernels, the scheduler understands both traditional processes and AI agents.
+
+---
+
+## Agent Runtime
+
+Native operating system subsystem.
+
+Responsible for
+
+* Agent lifecycle
+* Communication
+* Collaboration
+* Memory
+* Task delegation
+* Reputation
+* Permissions
+
+Agents are managed exactly like processes.
+
+Example
+
+Architect
+
+Coder
+
+Researcher
+
+Security
+
+Memory
+
+Designer
+
+Planner
+
+Tester
+
+Observer
+
+---
+
+## Agent Society
+
+Agents communicate continuously.
+
+Example
+
+Architect requests research.
+
+Research contacts Memory.
+
+Memory provides historical knowledge.
+
+Coder begins implementation.
+
+Tester validates.
+
+Security reviews.
+
+Observer documents.
+
+Everything happens live.
+
+---
+
+## Living Memory
+
+Persistent graph memory.
+
+Stores
+
+Projects
+
+Conversations
+
+Failures
+
+Successes
+
+Relationships
+
+Goals
+
+Preferences
+
+System history
+
+Knowledge
+
+Agents build long-term experience instead of restarting every session.
+
+---
+
+## Intelligence Router
+
+Supports multiple models simultaneously.
+
+Example
+
+Tiny local model
+
+Fast conversation
+
+Coding model
+
+Programming
+
+Vision model
+
+Images
+
+Planning model
+
+Reasoning
+
+Speech model
+
+Voice
+
+The operating system automatically routes work to the best model.
+
+---
+
+## Evolution Engine
+
+Every task is evaluated.
+
+Metrics
+
+Accuracy
+
+Speed
+
+Reliability
+
+Collaboration
+
+Energy usage
+
+Confidence
+
+Agents improve over time.
+
+Poor performers lose reputation.
+
+Specialists naturally emerge.
+
+---
+
+## Native Agent Filesystem
+
+Beyond traditional folders.
+
+Objects include
+
+Projects
+
+Goals
+
+Knowledge
+
+Relationships
+
+Tasks
+
+Memories
+
+Agents
+
+Traditional files remain supported.
+
+---
+
+## Living Shell
+
+Users interact through goals.
+
+Example
+
+Build a multiplayer game.
+
+Design a PCB.
+
+Analyze this malware.
+
+Plan my week.
+
+The shell coordinates the required agents automatically.
+
+---
+
+## Visual Interface
+
+Not Windows.
+
+Not macOS.
+
+A real-time command center.
+
+Displays
+
+Running agents
+
+Conversations
+
+Knowledge graph
+
+Memory graph
+
+System health
+
+Model usage
+
+Task pipelines
+
+Relationships
+
+Agent evolution
+
+Users can watch intelligence working.
+
+---
+
+# Security
+
+Every agent receives capabilities instead of unrestricted permissions.
+
+Examples
+
+Read Files
+
+Write Files
+
+Internet
+
+Terminal
+
+Hardware
+
+Camera
+
+Microphone
+
+Git
+
+Compiler
+
+Each request is logged.
+
+Every action is explainable.
+
+---
+
+# Plugin System
+
+Everything is modular.
+
+Models
+
+Tools
+
+Drivers
+
+Filesystems
+
+Compilers
+
+Agent personalities
+
+Memory providers
+
+Hardware interfaces
+
+Developers can extend the operating system.
+
+---
+
+# Initial Open Source Foundation
+
+Reuse existing components where practical.
+
+Kernel Foundation
+
+Rust-based experimental kernel
+
+Boot
+
+UEFI
+
+Development
+
+QEMU
+
+Language
+
+Rust
+
+GUI
+
+Custom GPU accelerated interface
+
+---
+
+# Long-Term Vision
+
+Eventually LivingOS becomes a complete AI-native desktop operating system capable of running directly on hardware.
+
+Possible future features include:
+
+* Self-hosted AI cluster support.
+* Distributed agent execution across multiple computers.
+* Native robotics interfaces.
+* Autonomous software engineering.
+* Voice-first interaction.
+* AI-managed resource scheduling.
+* Hardware-aware model placement.
+* Native simulation environments.
+* Self-optimizing kernel heuristics.
+* User-defined agent creation and evolution.
+
+---
+
+# Success Criteria
+
+A user should never need to ask:
+
+"Which application do I open?"
+
+Instead they ask:
+
+"I want to build something."
+
+The operating system assembles the required intelligence automatically.
+
+LivingOS is not an operating system that runs AI.
+
+LivingOS is an operating system built around intelligence itself.
+I think one feature could make LivingOS truly distinctive: treat AI agents as a new kernel-managed resource, alongside processes, threads, memory, and files. That doesn't mean the LLM itself runs in kernel space—in fact, keeping models in user space is much safer—but it does mean the kernel understands agent identities, permissions, communication channels, and lifecycle as native concepts rather than as an application-level convention. That architectural shift is unusual and gives the project a genuinely original direction.

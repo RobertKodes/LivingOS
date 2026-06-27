@@ -1,0 +1,4 @@
+# The Living Kernel boots on bare-metal UEFI. `cargo build` here always targets
+# firmware, producing target/x86_64-unknown-uefi/<profile>/livingos.efi.
+[build]
+target = "x86_64-unknown-uefi"

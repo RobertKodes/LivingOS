@@ -1,0 +1,13 @@
+# Rust build artifacts (host workspace + bootable kernel)
+/target
+kernel/target
+**/target
+
+# Runtime state written by the `living` shell
+/data
+/config/fleet.json
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp

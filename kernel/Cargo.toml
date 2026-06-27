@@ -1,0 +1,21 @@
+[package]
+name = "livingos-kernel"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "The Living Kernel — a bootable UEFI Rust kernel where AI agents are first-class, kernel-managed resources."
+
+[[bin]]
+name = "livingos"
+path = "src/main.rs"
+
+[dependencies]
+uefi = { version = "0.33", features = ["global_allocator", "logger", "panic_handler"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+
+# Detach from the parent (host) workspace: the kernel targets bare metal
+# (x86_64-unknown-uefi) and must not be built for the host.
+[workspace]

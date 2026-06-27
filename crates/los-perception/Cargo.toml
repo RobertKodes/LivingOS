@@ -1,0 +1,9 @@
+[package]
+name = "los-perception"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+xcap = { workspace = true }
+png = { workspace = true }

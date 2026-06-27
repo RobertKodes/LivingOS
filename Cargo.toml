@@ -1,0 +1,35 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/los-kernel",
+    "crates/los-memory",
+    "crates/los-router",
+    "crates/los-perception",
+    "crates/los-runtime",
+    "crates/los-shell",
+]
+# The bootable kernel targets bare-metal UEFI and is its own workspace.
+exclude = ["kernel"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["LivingOS"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
+base64 = "0.22"
+png = "0.17"
+xcap = "0.0.14"
+
+los-kernel = { path = "crates/los-kernel" }
+los-memory = { path = "crates/los-memory" }
+los-router = { path = "crates/los-router" }
+los-perception = { path = "crates/los-perception" }
+los-runtime = { path = "crates/los-runtime" }
+
+[profile.release]
+opt-level = 2
