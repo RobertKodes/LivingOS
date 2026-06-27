@@ -37,6 +37,22 @@ fn transmit_empty() -> bool {
     unsafe { inb(PORT + 5) & 0x20 != 0 }
 }
 
+/// True when the UART has a received byte waiting.
+fn data_ready() -> bool {
+    unsafe { inb(PORT + 5) & 0x01 != 0 }
+}
+
+/// Non-blocking read of one received byte from COM1, if any. This lets the
+/// on-OS shell be driven over a serial line (e.g. a headless host or
+/// `qemu ... -serial stdio`) in addition to the keyboard.
+pub fn try_read_byte() -> Option<u8> {
+    if data_ready() {
+        Some(unsafe { inb(PORT) })
+    } else {
+        None
+    }
+}
+
 fn write_byte(b: u8) {
     while !transmit_empty() {}
     unsafe { outb(PORT, b) }

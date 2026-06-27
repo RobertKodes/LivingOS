@@ -10,7 +10,7 @@ name = "livingos"
 path = "src/main.rs"
 
 [dependencies]
-uefi = { version = "0.33", features = ["global_allocator", "logger", "panic_handler"] }
+uefi = { version = "0.33", features = ["alloc", "global_allocator", "logger", "panic_handler"] }
 
 [profile.release]
 opt-level = "s"
