@@ -57,6 +57,12 @@ fn handle_char(ch: char, buf: &mut String) -> bool {
     false
 }
 
+/// Non-blocking: returns true if a key (keyboard or serial) is waiting,
+/// consuming it. Used to hold a view until dismissed.
+pub fn any_key() -> bool {
+    poll_keyboard().is_some() || serial::try_read_byte().is_some()
+}
+
 /// Read one line, blocking, from keyboard or serial. Handles backspace and
 /// treats CR or LF as end-of-line. Drains the serial FIFO eagerly each pass so
 /// a streamed/pasted line isn't lost to a 16-byte UART overflow.

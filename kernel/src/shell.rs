@@ -367,8 +367,14 @@ impl Shell {
         footer.push_str("   -  press Enter to return");
 
         if crate::gop::render_dashboard(&views, &footer) {
-            kprintln!("[dash] command center rendered to the framebuffer (press Enter to return)");
-            let _ = console::read_line();
+            kprintln!("[dash] command center rendered to the framebuffer (press a key to return)");
+            // Hold the view for a few seconds, or until a key is pressed.
+            for _ in 0..3000 {
+                if console::any_key() {
+                    break;
+                }
+                uefi::boot::stall(2000);
+            }
             console::clear();
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");

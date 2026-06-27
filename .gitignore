@@ -7,6 +7,18 @@ kernel/target
 /data
 /config/fleet.json
 
+# Release disk images + video intermediates (large / regenerable)
+/release/*.img
+/release/*.vhdx
+/release/*.vmdk
+/release/*.qcow2
+/release/video/frames
+/release/video/*.mp4
+/release/video/*.ppm
+/release/video/title.mp4
+/release/video/body.mp4
+/release/video/end.mp4
+
 # Editor / OS noise
 .DS_Store
 Thumbs.db

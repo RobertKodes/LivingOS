@@ -10,11 +10,16 @@ capabilities, lifecycle, scheduling, and IPC as native primitives** — not as a
 application-level convention. The large language models that make agents
 intelligent stay in user space (safer); the kernel owns the agents themselves.
 
-This is an experimental OS. It boots on bare-metal UEFI firmware in QEMU.
+This is an experimental OS. It boots on bare-metal UEFI firmware — in a VM or on
+real hardware.
 
 ```
  User  →  Goal  →  Agent Society  →  Living Kernel  →  Hardware
 ```
+
+**[▶ Watch the demo](docs/livingos_demo.mp4)** · **[Install / boot it](docs/INSTALL.md)** · **[Roadmap (GUI + self-hosted desktop)](docs/ROADMAP.md)** · **[Status](docs/STATUS.md)**
+
+![LivingOS demo](docs/livingos_demo.gif)
 
 ![LivingOS boot splash, rendered to the GPU framebuffer](docs/splash.png)
 
