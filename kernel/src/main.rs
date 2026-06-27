@@ -56,6 +56,7 @@ mod sched;
 mod serial;
 mod shell;
 mod society;
+mod task;
 
 use uefi::prelude::*;
 

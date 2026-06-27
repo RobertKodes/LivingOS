@@ -58,6 +58,11 @@ fn write_byte(b: u8) {
     unsafe { outb(PORT, b) }
 }
 
+/// Write a single byte to COM1 — a minimal-stack breadcrumb primitive.
+pub fn putc(b: u8) {
+    write_byte(b);
+}
+
 /// A `core::fmt::Write` sink over COM1. `\n` is expanded to `\r\n`.
 pub struct Serial;
 

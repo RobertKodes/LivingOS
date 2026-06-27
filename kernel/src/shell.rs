@@ -114,6 +114,7 @@ impl Shell {
             "plugins" => self.cmd_plugins(),
             "syscall" => self.cmd_syscall(),
             "vm" | "paging" => self.cmd_vm(),
+            "tasks" | "sched" => self.cmd_tasks(),
             "gen" | "infer" => self.cmd_gen(rest),
             "beep" => {
                 crate::audio::chime();
@@ -149,6 +150,7 @@ impl Shell {
         kprintln!("  beep          drive the PC speaker (audio out)");
         kprintln!("  syscall       demo the int 0x80 kernel syscall bridge");
         kprintln!("  vm            memory map + live page-table mapping demo");
+        kprintln!("  tasks         cooperative multitasking with context switches");
         kprintln!("  sys           kernel + system status");
         kprintln!("  clear         clear the screen");
         kprintln!("  about         what LivingOS is");
@@ -336,6 +338,19 @@ impl Shell {
         } else {
             kprintln!("(no framebuffer available; the dashboard needs a GPU/GOP)");
         }
+    }
+
+    fn cmd_tasks(&self) {
+        console::set_color(Color::Yellow);
+        kprintln!("MULTITASKING");
+        console::reset_color();
+        kprintln!("  context-switch primitive: livingos_context_switch (task.rs)");
+        kprintln!("    saves rbx/rbp/r12-r15 + rsp of one context, loads another's");
+        kprintln!("    -- the core operation a scheduler is built from.");
+        kprintln!("  Each agent already runs as a scheduled kernel object (see ps).");
+        kprintln!("  A live coroutine round-trip is wired but unstable under OVMF");
+        kprintln!("  boot services; preemptive timer-driven switching (via the IDT");
+        kprintln!("  from `syscall`) is the next step.");
     }
 
     fn cmd_vm(&self) {
