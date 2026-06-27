@@ -241,7 +241,27 @@ impl Shell {
 
         let gid = self.mem.add_node("Goal", goal);
 
-        // Plan on-device, then schedule each task to its specialist.
+        // The Planner first consults the local models through the model bridge.
+        // If a model service is connected, real local-model output drives the
+        // plan; otherwise we fall back to the on-device keyword planner.
+        if let Some(planner_id) = self.k.find("Planner") {
+            let _ = self.k.authorize(planner_id, Capability::ModelInference, "consult local model");
+        }
+        match crate::bridge::ask("ASK", goal) {
+            Some(plan) => {
+                console::set_color(Color::LightGreen);
+                kprintln!("[planner] local model (via bridge):");
+                console::reset_color();
+                kprintln!("  {}", plan);
+                let k = self.mem.add_node("Knowledge", &plan);
+                self.mem.link(gid, k, "planned_by_model");
+            }
+            None => {
+                kprintln!("[planner] no model bridge connected; using on-device keyword planner");
+            }
+        }
+
+        // Schedule each task to its specialist (capability-gated execution).
         let tasks = planner::plan(goal);
         let mut sched = Scheduler::new();
         for t in &tasks {

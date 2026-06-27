@@ -20,17 +20,23 @@ import urllib.request
 HOST = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1"
 PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 4555
 OLLAMA = "http://localhost:11434/api/generate"
-MODEL = "smollm3:3b"
+MODEL = "qwen2.5:0.5b"
 
 
 def call_model(goal: str) -> str:
     """Route to a local model via Ollama; fall back to a deterministic plan."""
+    prompt = (
+        "You are the planner of an AI operating system. In ONE short sentence, "
+        f"give a concrete plan to accomplish this goal: {goal}"
+    )
     try:
-        body = json.dumps({"model": MODEL, "prompt": goal, "stream": False}).encode()
+        body = json.dumps(
+            {"model": MODEL, "prompt": prompt, "stream": False, "options": {"num_predict": 80}}
+        ).encode()
         req = urllib.request.Request(OLLAMA, data=body, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=120) as r:
             resp = json.loads(r.read()).get("response", "").strip()
-        return (resp or "(empty)").replace("\n", " ")[:240]
+        return (resp or "(empty)").replace("\n", " ")[:220]
     except Exception:
         # No Ollama: respond deterministically so the bridge is demonstrable.
         return f"(local, offline) approach for '{goal}': research, design, implement, test, review"

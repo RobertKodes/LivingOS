@@ -50,9 +50,9 @@ pub fn ask(kind: &str, text: &str) -> Option<String> {
             }
             None => {
                 idle += 1;
-                // ~8 seconds of patience for the host model call (1 ms per poll;
+                // ~30 seconds of patience for the host model call (1 ms per poll;
                 // a wall-clock budget, not a spin count, so it survives a fast CPU).
-                if idle > 8000 {
+                if idle > 30000 {
                     return None;
                 }
                 uefi::boot::stall(1000);
